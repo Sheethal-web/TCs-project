@@ -1,0 +1,7 @@
+node_modules/
+.env
+.venv/
+ml_models/massive_sales_data.csv
+ml_models/temp_groceries.csv
+dist/
+.DS_Store
