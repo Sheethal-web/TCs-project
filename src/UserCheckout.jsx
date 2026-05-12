@@ -11,18 +11,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-const MENU_ITEMS = [
-  { id: 1, name: 'Laptop', price: 45000, category: 'Electronics & Tech' },
-  { id: 2, name: 'Wireless Mouse', price: 1200, category: 'Accessories' },
-  { id: 3, name: 'DSLR Camera', price: 55000, category: 'Electronics & Tech' },
-  { id: 4, name: 'SD Card', price: 800, category: 'Accessories' },
-  { id: 5, name: 'Pasta', price: 250, category: 'Food & Restaurant' },
-  { id: 6, name: 'Garlic Bread', price: 100, category: 'Food & Restaurant' },
-  { id: 7, name: 'Diapers', price: 600, category: 'Parents & Baby' },
-  { id: 8, name: 'Wet Wipes', price: 150, category: 'Parents & Baby' },
-  { id: 9, name: 'Notebooks (Set of 5)', price: 300, category: 'School & Education' },
-  { id: 10, name: 'Blue Pens', price: 50, category: 'School & Education' },
-];
+import { MENU_ITEMS } from './data/products';
 
 export default function UserCheckout() {
   const [cart, setCart] = useState([]);
@@ -53,37 +42,52 @@ export default function UserCheckout() {
     return () => clearInterval(interval);
   }, [isCameraActive]);
 
-  const handleAddToCart = (item) => {
-    setCart(prev => {
-      const existing = prev.find(i => i.id === item.id);
-      if (existing) {
-        return prev.map(i => i.id === item.id ? { ...i, qty: i.qty + 1 } : i);
-      }
-      return [...prev, { ...item, qty: 1 }];
-    });
+  const handleAddToCart = async (item) => {
+    // Optimistic UI update
+    const newCart = [...cart];
+    const existing = newCart.find(i => i.id === item.id);
+    if (existing) {
+      existing.qty += 1;
+    } else {
+      newCart.push({ ...item, qty: 1 });
+    }
+    setCart([...newCart]);
 
-    // AI Logic Trigger Simulation
-    const checkBundle = (trigger, offerName, discountText, discountPrice, message, lift) => {
-      if (item.name === trigger && !cart.find(i => i.name === offerName)) {
-        setCurrentOffer({
-          triggerItem: trigger,
-          offerItem: MENU_ITEMS.find(i => i.name === offerName),
-          discountText,
-          discountPrice,
-          message,
-          aiType: `Market Basket Analysis (Lift: ${lift})`
-        });
-        setTimeout(() => setShowOffer(true), 800);
-        return true;
-      }
-      return false;
-    };
+    // Send the current cart to the backend ML Engine for real-time recommendations
+    try {
+      const backendUrl = import.meta.env.VITE_API_URL || 'http://34.230.28.56:5000';
+      const response = await fetch(`${backendUrl}/api/cart/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ device_id: 'kiosk-01', cart: newCart.map(i => i.name) })
+      });
+      
+      const data = await response.json();
+      
+      if (data.ai_response && data.ai_response.recommendation) {
+        const recommendedItemName = data.ai_response.recommendation;
+        const offerItemObj = MENU_ITEMS.find(i => i.name === recommendedItemName);
+        
+        if (offerItemObj) {
+          // Calculate the discount price based on the text (e.g. 30% OFF)
+          const discountMatch = data.ai_response.discountText.match(/(\d+)%/);
+          const percentOff = discountMatch ? parseInt(discountMatch[1]) : 15;
+          const discountPrice = Math.floor(offerItemObj.price * (1 - (percentOff / 100)));
 
-    checkBundle('Laptop', 'Wireless Mouse', '30% OFF Mouse', 840, 'The Essentials Bundle: Customers who bought this laptop also bought a wireless mouse.', 3.5) ||
-    checkBundle('DSLR Camera', 'SD Card', '50% OFF SD Card', 400, 'The Ready-to-Shoot Kit: Get an SD card at 50% off to start shooting immediately!', 4.2) ||
-    checkBundle('Pasta', 'Garlic Bread', 'Free Garlic Bread', 0, 'The Italian Classic: High demand! Add Garlic bread for free to complete your meal.', 2.8) ||
-    checkBundle('Diapers', 'Wet Wipes', '25% OFF Wipes', 112, 'The Hygiene Essential: Parents who buy diapers also need wet wipes. Add now to save!', 5.1) ||
-    checkBundle('Notebooks (Set of 5)', 'Blue Pens', 'Flash Sale: ₹20', 20, 'The Semester Start: Grab some blue pens to go with your new notebooks.', 1.9);
+          setCurrentOffer({
+            triggerItem: item.name,
+            offerItem: offerItemObj,
+            discountText: data.ai_response.discountText,
+            discountPrice: discountPrice,
+            message: data.ai_response.message,
+            aiType: `Cloud Market Basket Analysis (Lift: ${data.ai_response.lift})`
+          });
+          setTimeout(() => setShowOffer(true), 800);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch ML recommendation:", error);
+    }
   };
 
   const handleUpdateQty = (id, delta) => {
