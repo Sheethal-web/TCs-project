@@ -85,9 +85,8 @@ class RaspberryPiCameraClient:
             # self.camera.release()
 
 if __name__ == "__main__":
-    # Replace this with your actual AWS API Gateway or EC2 public IP
-    # Example: "https://api.yourdomain.com"
-    AWS_CLOUD_URL = "http://localhost:5000" 
+    # Point this to your EC2 Public IP
+    AWS_CLOUD_URL = "http://34.230.28.56:5000" 
     
     pi_client = RaspberryPiCameraClient(aws_endpoint=AWS_CLOUD_URL)
     pi_client.start_loop()

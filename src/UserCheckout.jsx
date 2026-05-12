@@ -37,7 +37,8 @@ export default function UserCheckout() {
     if (isCameraActive) {
       interval = setInterval(async () => {
         try {
-          const response = await fetch('http://localhost:5000/api/iot/latest_offer');
+          const backendUrl = import.meta.env.VITE_API_URL || 'http://34.230.28.56:5000';
+          const response = await fetch(`${backendUrl}/api/iot/latest_offer`);
           const data = await response.json();
           if (data.new_offer && data.offer) {
             console.log("Cloud IoT Offer Received!", data.offer);
