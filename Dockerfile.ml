@@ -1,0 +1,18 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy ML models
+COPY ml_models/ ./ml_models/
+
+# Expose port
+EXPOSE 8000
+
+# Start FastAPI server
+CMD ["uvicorn", "ml_models.cloud_ml_api:app", "--host", "0.0.0.0", "--port", "8000"]
