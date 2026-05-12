@@ -10,6 +10,9 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Global state to store the latest offer triggered by the Raspberry Pi Camera
+let latestIoTOffer = null;
+
 // Mock Data
 const kpiData = {
   liveRevenue: 15420,
@@ -80,30 +83,58 @@ app.post('/api/recommendations/:id/dismiss', (req, res) => {
 });
 
 // IoT Endpoint: Receive camera data from Raspberry Pi
-app.post('/api/cart/sync', (req, res) => {
+app.post('/api/cart/sync', async (req, res) => {
   const { device_id, cart } = req.body;
   console.log(`\n[IoT CLOUD] Received camera data from ${device_id}:`, cart);
 
-  // AWS Cloud ML Processing (Mocking the Python ML Service response)
-  let offer = null;
-  
-  if (cart.includes('Laptop') && !cart.includes('Wireless Mouse')) {
-    offer = { message: "30% OFF Wireless Mouse! (Essentials Bundle)" };
-  } else if (cart.includes('DSLR Camera') && !cart.includes('SD Card')) {
-    offer = { message: "50% OFF SD Card! (Ready-to-Shoot Kit)" };
-  } else if (cart.includes('Pasta') && !cart.includes('Garlic Bread')) {
-    offer = { message: "Free Garlic Bread! (Italian Classic)" };
-  } else if (cart.includes('Diapers') && !cart.includes('Wet Wipes')) {
-    offer = { message: "25% OFF Wet Wipes! (Hygiene Essential)" };
-  }
+  try {
+    // 1. Send the Raspberry Pi camera data to the Python ML Engine running on AWS
+    // For local testing, it defaults to port 8000 if the Env Var is missing.
+    const pythonApiUrl = process.env.PYTHON_API_URL || 'http://127.0.0.1:8000';
+    const mlResponse = await fetch(`${pythonApiUrl}/predict_bundle`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: cart })
+    });
 
-  if (offer) {
-    console.log(`[IoT CLOUD] AI Engine generated offer: ${offer.message}`);
+    if (!mlResponse.ok) throw new Error("ML Service unreachable");
+    
+    const mlData = await mlResponse.json();
+
+    // 2. If the ML Engine found a bundle, save it globally so the Frontend can display it
+    if (mlData.recommendation) {
+      console.log(`[IoT CLOUD] ML Engine generated offer: ${mlData.discountText}`);
+      latestIoTOffer = {
+        triggerItem: cart.join(", "),
+        offerItem: { name: mlData.recommendation }, // Mocked structure for frontend
+        discountText: mlData.discountText,
+        message: mlData.message,
+        aiType: `Cloud Market Basket Analysis (Lift: ${mlData.lift})`
+      };
+    } else {
+      console.log(`[IoT CLOUD] No bundle generated for this cart.`);
+      latestIoTOffer = null;
+    }
+
+    res.json({ success: true, ai_response: mlData });
+
+  } catch (error) {
+    console.error(`[IoT CLOUD ERROR] Failed to contact Python ML Engine: ${error.message}`);
+    console.log("Ensure you run: python ml_models/cloud_ml_api.py");
+    res.status(500).json({ error: 'ML Engine Offline' });
+  }
+});
+
+// Frontend Polling Endpoint: React will constantly check this to see if the camera triggered an offer
+app.get('/api/iot/latest_offer', (req, res) => {
+  if (latestIoTOffer) {
+    // Send the offer and then clear it so it doesn't pop up infinitely
+    const offerToSend = latestIoTOffer;
+    latestIoTOffer = null;
+    res.json({ new_offer: true, offer: offerToSend });
   } else {
-    console.log(`[IoT CLOUD] No bundle generated for this cart.`);
+    res.json({ new_offer: false });
   }
-
-  res.json({ success: true, offer });
 });
 
 app.listen(PORT, () => {

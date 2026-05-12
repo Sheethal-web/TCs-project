@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, Card, CardContent, Typography, Button, Grid, IconButton, 
   Divider, Chip, Dialog, DialogTitle, DialogContent, DialogActions, Slide, Fade 
@@ -28,6 +28,29 @@ export default function UserCheckout() {
   const [cart, setCart] = useState([]);
   const [showOffer, setShowOffer] = useState(false);
   const [currentOffer, setCurrentOffer] = useState(null);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+
+  // Poll the Node.js backend to see if the IoT Raspberry Pi camera detected an item
+  // and the Cloud ML Engine generated a coupon for it.
+  useEffect(() => {
+    let interval;
+    if (isCameraActive) {
+      interval = setInterval(async () => {
+        try {
+          const response = await fetch('http://localhost:5000/api/iot/latest_offer');
+          const data = await response.json();
+          if (data.new_offer && data.offer) {
+            console.log("Cloud IoT Offer Received!", data.offer);
+            setCurrentOffer(data.offer);
+            setShowOffer(true);
+          }
+        } catch (error) {
+          console.error("IoT Polling Error:", error);
+        }
+      }, 3000); // Poll every 3 seconds
+    }
+    return () => clearInterval(interval);
+  }, [isCameraActive]);
 
   const handleAddToCart = (item) => {
     setCart(prev => {
@@ -90,7 +113,17 @@ export default function UserCheckout() {
 
   return (
     <Box sx={{ p: 4, height: '100%', bgcolor: 'background.default' }}>
-      <Typography variant="h4" fontWeight="bold" mb={1}>Self-Service Kiosk</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+        <Typography variant="h4" fontWeight="bold">Smart Checkout Kiosk</Typography>
+        <Button 
+          variant={isCameraActive ? "contained" : "outlined"} 
+          color={isCameraActive ? "success" : "primary"}
+          onClick={() => setIsCameraActive(!isCameraActive)}
+          sx={{ borderRadius: '20px', textTransform: 'none', fontWeight: 'bold' }}
+        >
+          {isCameraActive ? "IoT Camera Sync: ON" : "IoT Camera Sync: OFF"}
+        </Button>
+      </Box>
       <Typography variant="body2" color="text.secondary" mb={4}>Experience the AI from the customer's point of view.</Typography>
 
       <Grid container spacing={4}>
