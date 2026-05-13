@@ -1,0 +1,176 @@
+id,name,price,category
+1,Smartphone,209.0,Electronics
+2,Laptop,679.0,Electronics
+3,Tablet,979.0,Electronics
+4,Wireless Earbuds,99.0,Electronics
+5,Laptop Bag,49.0,Accessories
+6,Tablet Case,39.0,Accessories
+7,misc. beverages,8.21,Beverages
+8,sliced cheese,2.64,Dairy
+9,pork,7.75,Meat
+10,pickled vegetables,3.01,Pantry
+11,seasonal products,7.63,Pantry
+12,pastry,5.38,Bakery
+13,specialty chocolate,9.03,Pantry
+14,photo/film,1.78,Pantry
+15,cookware,4.8,Pantry
+16,bottled water,1.81,Beverages
+17,snack products,2.97,Pantry
+18,butter milk,5.28,Dairy
+19,citrus fruit,1.13,Produce
+20,hair spray,2.79,Pantry
+21,ketchup,6.85,Pantry
+22,chicken,10.45,Meat
+23,whipped/sour cream,3.71,Dairy
+24,light bulbs,6.3,Pantry
+25,house keeping products,8.28,Pantry
+26,hygiene articles,1.06,Pantry
+27,soda,9.96,Beverages
+28,curd cheese,6.34,Dairy
+29,soft cheese,4.37,Dairy
+30,semi-finished bread,2.78,Bakery
+31,nuts/prunes,9.61,Pantry
+32,frozen fruits,4.03,Pantry
+33,syrup,1.83,Pantry
+34,jam,1.87,Pantry
+35,specialty fat,8.63,Pantry
+36,curd,5.82,Dairy
+37,salty snack,8.26,Pantry
+38,bags,7.57,Pantry
+39,frozen chicken,10.36,Meat
+40,meat,9.76,Pantry
+41,cling film/bags,4.41,Pantry
+42,dishes,5.97,Pantry
+43,tropical fruit,5.15,Produce
+44,specialty cheese,5.9,Dairy
+45,soap,8.76,Pantry
+46,meat spreads,6.2,Pantry
+47,preservation products,7.34,Pantry
+48,cat food,1.41,Pantry
+49,mustard,3.05,Pantry
+50,flour,3.6,Pantry
+51,salt,1.72,Pantry
+52,honey,3.1,Pantry
+53,finished products,1.91,Pantry
+54,beverages,4.42,Beverages
+55,artif. sweetener,6.72,Pantry
+56,candy,4.28,Pantry
+57,sweet spreads,4.33,Pantry
+58,margarine,2.89,Pantry
+59,roll products,3.4,Pantry
+60,brown bread,6.68,Bakery
+61,grapes,4.24,Produce
+62,pudding powder,6.48,Pantry
+63,sound storage medium,2.54,Pantry
+64,turkey,12.29,Meat
+65,UHT-milk,3.4,Dairy
+66,decalcifier,4.42,Pantry
+67,butter,7.94,Dairy
+68,organic sausage,11.4,Meat
+69,newspapers,6.01,Pantry
+70,dessert,7.16,Pantry
+71,canned fish,8.59,Pantry
+72,pot plants,7.98,Pantry
+73,rolls/buns,3.15,Bakery
+74,vinegar,1.29,Pantry
+75,coffee,4.81,Beverages
+76,herbs,3.41,Pantry
+77,zwieback,3.05,Bakery
+78,sauces,9.49,Pantry
+79,cereals,8.89,Pantry
+80,dental care,3.83,Pantry
+81,canned vegetables,6.9,Pantry
+82,make up remover,4.56,Pantry
+83,cream,9.23,Pantry
+84,chewing gum,5.13,Pantry
+85,sausage,7.65,Meat
+86,frozen dessert,3.22,Pantry
+87,abrasive cleaner,6.05,Pantry
+88,condensed milk,3.95,Dairy
+89,instant coffee,7.64,Beverages
+90,kitchen utensil,9.08,Pantry
+91,pasta,4.59,Pantry
+92,whisky,2.97,Pantry
+93,organic products,9.98,Pantry
+94,male cosmetics,5.59,Pantry
+95,Instant food products,1.82,Pantry
+96,dish cleaner,1.42,Pantry
+97,yogurt,3.1,Dairy
+98,cleaner,6.65,Pantry
+99,liqueur,8.13,Pantry
+100,softener,4.8,Pantry
+101,female sanitary products,1.57,Pantry
+102,processed cheese,4.6,Dairy
+103,cooking chocolate,9.97,Pantry
+104,chocolate,5.76,Pantry
+105,frozen meals,9.74,Pantry
+106,pet care,8.75,Pantry
+107,beef,5.11,Meat
+108,baby food,7.49,Pantry
+109,whole milk,6.25,Dairy
+110,packaged fruit/vegetables,3.68,Produce
+111,chocolate marshmallow,3.4,Pantry
+112,tea,8.23,Beverages
+113,hamburger meat,6.12,Meat
+114,shopping bags,4.91,Pantry
+115,spread cheese,5.0,Dairy
+116,berries,5.77,Produce
+117,onions,5.38,Produce
+118,cocoa drinks,3.37,Pantry
+119,spices,5.51,Pantry
+120,napkins,2.61,Pantry
+121,flower soil/fertilizer,9.21,Pantry
+122,pip fruit,5.35,Produce
+123,skin care,3.69,Pantry
+124,potato products,6.75,Pantry
+125,rum,6.48,Pantry
+126,oil,2.38,Pantry
+127,ham,12.63,Meat
+128,dog food,5.85,Pantry
+129,white wine,9.68,Beverages
+130,fish,5.77,Pantry
+131,nut snack,1.01,Pantry
+132,ready soups,3.92,Pantry
+133,rice,1.18,Pantry
+134,liquor,11.26,Beverages
+135,liver loaf,8.91,Pantry
+136,toilet cleaner,8.48,Pantry
+137,cake bar,3.54,Bakery
+138,mayonnaise,1.52,Pantry
+139,specialty bar,8.9,Pantry
+140,waffles,9.52,Pantry
+141,domestic eggs,1.77,Pantry
+142,cream cheese,5.17,Dairy
+143,canned beer,2.23,Beverages
+144,kitchen towels,7.85,Pantry
+145,white bread,5.83,Bakery
+146,frozen vegetables,2.16,Pantry
+147,soups,5.28,Pantry
+148,baking powder,5.95,Pantry
+149,sparkling wine,4.28,Beverages
+150,tidbits,8.85,Pantry
+151,bottled beer,5.94,Beverages
+152,sugar,2.91,Pantry
+153,frozen fish,5.85,Pantry
+154,specialty vegetables,7.57,Pantry
+155,other vegetables,2.01,Produce
+156,detergent,3.81,Pantry
+157,ice cream,9.96,Pantry
+158,bathroom cleaner,6.85,Pantry
+159,prosecco,4.94,Pantry
+160,candles,5.66,Pantry
+161,brandy,2.77,Beverages
+162,fruit/vegetable juice,2.12,Produce
+163,root vegetables,2.69,Produce
+164,salad dressing,6.29,Pantry
+165,red/blush wine,3.92,Beverages
+166,flower (seeds),2.98,Pantry
+167,hard cheese,2.89,Dairy
+168,frankfurter,11.31,Meat
+169,rubbing alcohol,3.06,Pantry
+170,baby cosmetics,9.15,Pantry
+171,canned fruit,8.74,Pantry
+172,popcorn,1.64,Pantry
+173,frozen potato products,3.14,Pantry
+174,long life bakery product,5.34,Bakery
+175,liquor (appetizer),3.75,Beverages

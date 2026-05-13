@@ -18,6 +18,10 @@ export default function UserCheckout() {
   const [showOffer, setShowOffer] = useState(false);
   const [currentOffer, setCurrentOffer] = useState(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
+  const [selectedProducts, setSelectedProducts] = useState(null); // For 1,2,3 selection
+
+  // Featured products for selection
+  const featuredProducts = MENU_ITEMS.slice(0, 3);
 
   // Poll the Node.js backend to see if the IoT Raspberry Pi camera detected an item
   // and the Cloud ML Engine generated a coupon for it.
@@ -90,14 +94,23 @@ export default function UserCheckout() {
     }
   };
 
+  const handleProductSelection = (product) => {
+    setSelectedProducts(product);
+  };
+
+  const handleAddSelectedToCart = () => {
+    if (selectedProducts) {
+      handleAddToCart(selectedProducts);
+      setSelectedProducts(null);
+    }
+  };
+
   const handleUpdateQty = (id, delta) => {
-    setCart(prev => prev.map(item => {
-      if (item.id === id) {
-        const newQty = item.qty + delta;
-        return newQty > 0 ? { ...item, qty: newQty } : item;
-      }
-      return item;
-    }));
+    setCart(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, qty: Math.max(1, item.qty + delta) } : item
+      )
+    );
   };
 
   const handleRemove = (id) => {
@@ -133,25 +146,49 @@ export default function UserCheckout() {
 
       <Grid container spacing={4}>
         <Grid item xs={12} md={8}>
-          <Typography variant="h6" mb={2}>Menu</Typography>
-          <Grid container spacing={2}>
-            {MENU_ITEMS.map(item => (
-              <Grid item xs={12} sm={6} key={item.id}>
-                <Card sx={{ bgcolor: 'background.paper', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Box>
-                      <Typography variant="h6">{item.name}</Typography>
-                      <Typography color="text.secondary" variant="body2">{item.category}</Typography>
-                      <Typography color="primary.main" fontWeight="bold" mt={1}>₹{item.price}</Typography>
-                    </Box>
-                    <IconButton color="primary" onClick={() => handleAddToCart(item)} sx={{ bgcolor: 'rgba(124, 58, 237, 0.1)' }}>
-                      <Add />
-                    </IconButton>
-                  </CardContent>
-                </Card>
+          {!selectedProducts ? (
+            <>
+              <Typography variant="h6" mb={2}>Select a Product (1, 2, or 3)</Typography>
+              <Grid container spacing={2}>
+                {featuredProducts.map((item, index) => (
+                  <Grid item xs={12} sm={4} key={item.id}>
+                    <Card sx={{ bgcolor: 'background.paper', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer' }} onClick={() => handleProductSelection(item)}>
+                      <CardContent sx={{ textAlign: 'center' }}>
+                        <Typography variant="h2" color="primary" fontWeight="bold">{index + 1}</Typography>
+                        <Typography variant="h6">{item.name}</Typography>
+                        <Typography color="text.secondary" variant="body2">{item.category}</Typography>
+                        <Typography color="primary.main" fontWeight="bold" mt={1}>₹{item.price}</Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
               </Grid>
-            ))}
-          </Grid>
+            </>
+          ) : (
+            <>
+              <Typography variant="h6" mb={2}>Selected: {selectedProducts.name} - Recommendations from ML Model</Typography>
+              <Button variant="contained" onClick={handleAddSelectedToCart} sx={{ mb: 2 }}>Add to Cart with Discount Coupon</Button>
+              <Button variant="outlined" onClick={() => setSelectedProducts(null)} sx={{ mb: 2, ml: 1 }}>Back to Selection</Button>
+              <Grid container spacing={2}>
+                {MENU_ITEMS.map(item => (
+                  <Grid item xs={12} sm={6} key={item.id}>
+                    <Card sx={{ bgcolor: 'background.paper', border: '1px solid rgba(255,255,255,0.05)' }}>
+                      <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Box>
+                          <Typography variant="h6">{item.name}</Typography>
+                          <Typography color="text.secondary" variant="body2">{item.category}</Typography>
+                          <Typography color="primary.main" fontWeight="bold" mt={1}>₹{item.price}</Typography>
+                        </Box>
+                        <IconButton color="primary" onClick={() => handleAddToCart(item)} sx={{ bgcolor: 'rgba(124, 58, 237, 0.1)' }}>
+                          <Add />
+                        </IconButton>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </>
+          )}
         </Grid>
 
         <Grid item xs={12} md={4}>
