@@ -1,0 +1,6 @@
+# Lambda deployment package requirements
+# Note: AWS Lambda Python runtime already includes many standard libraries
+# Only add packages that are not included in the runtime
+
+# No additional dependencies needed for this basic implementation
+# The code only uses built-in Python libraries: json, csv, os, typing

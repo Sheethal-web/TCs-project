@@ -87,3 +87,4 @@ print('Sample new products:')
 for p in new_products[:10]:
     print(f'{p["id"]}: {p["name"]} - ${p["price"]} ({p["category"]})')4
     
+    

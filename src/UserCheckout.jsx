@@ -46,6 +46,46 @@ export default function UserCheckout() {
     return () => clearInterval(interval);
   }, [isCameraActive]);
 
+  const [isPredicting, setIsPredicting] = useState(false);
+
+  const syncCartWithMl = async (cartItems, triggerItem = null) => {
+    try {
+      const backendUrl = import.meta.env.VITE_API_URL || 'http://34.230.28.56:5000';
+      const response = await fetch(`${backendUrl}/api/cart/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ device_id: 'kiosk-01', cart: cartItems.map(i => i.name) })
+      });
+      const data = await response.json();
+
+      if (data.ai_response && data.ai_response.recommendation) {
+        const recommendedItemName = data.ai_response.recommendation;
+        const offerItemObj = MENU_ITEMS.find(i => i.name === recommendedItemName);
+
+        if (offerItemObj) {
+          const discountMatch = data.ai_response.discountText.match(/(\d+)%/);
+          const percentOff = discountMatch ? parseInt(discountMatch[1]) : 15;
+          const discountPrice = Math.floor(offerItemObj.price * (1 - (percentOff / 100)));
+
+          setCurrentOffer({
+            triggerItem: triggerItem?.name || cartItems.map(i => i.name).join(', '),
+            offerItem: offerItemObj,
+            discountText: data.ai_response.discountText,
+            discountPrice,
+            message: data.ai_response.message,
+            aiType: `Cloud Market Basket Analysis (Lift: ${data.ai_response.lift})`
+          });
+          return true;
+        }
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Failed to fetch ML recommendation:', error);
+      return false;
+    }
+  };
+
   const handleAddToCart = async (item) => {
     // Optimistic UI update
     const newCart = [...cart];
@@ -57,40 +97,9 @@ export default function UserCheckout() {
     }
     setCart([...newCart]);
 
-    // Send the current cart to the backend ML Engine for real-time recommendations
-    try {
-      const backendUrl = import.meta.env.VITE_API_URL || 'http://34.230.28.56:5000';
-      const response = await fetch(`${backendUrl}/api/cart/sync`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ device_id: 'kiosk-01', cart: newCart.map(i => i.name) })
-      });
-      
-      const data = await response.json();
-      
-      if (data.ai_response && data.ai_response.recommendation) {
-        const recommendedItemName = data.ai_response.recommendation;
-        const offerItemObj = MENU_ITEMS.find(i => i.name === recommendedItemName);
-        
-        if (offerItemObj) {
-          // Calculate the discount price based on the text (e.g. 30% OFF)
-          const discountMatch = data.ai_response.discountText.match(/(\d+)%/);
-          const percentOff = discountMatch ? parseInt(discountMatch[1]) : 15;
-          const discountPrice = Math.floor(offerItemObj.price * (1 - (percentOff / 100)));
-
-          setCurrentOffer({
-            triggerItem: item.name,
-            offerItem: offerItemObj,
-            discountText: data.ai_response.discountText,
-            discountPrice: discountPrice,
-            message: data.ai_response.message,
-            aiType: `Cloud Market Basket Analysis (Lift: ${data.ai_response.lift})`
-          });
-          setTimeout(() => setShowOffer(true), 800);
-        }
-      }
-    } catch (error) {
-      console.error("Failed to fetch ML recommendation:", error);
+    const hasRecommendation = await syncCartWithMl(newCart, item);
+    if (hasRecommendation) {
+      setTimeout(() => setShowOffer(true), 800);
     }
   };
 
@@ -102,6 +111,26 @@ export default function UserCheckout() {
     if (selectedProducts) {
       handleAddToCart(selectedProducts);
       setSelectedProducts(null);
+    }
+  };
+
+  const handleCheckout = async () => {
+    if (!cart.length) return;
+    setIsPredicting(true);
+    const hasRecommendation = await syncCartWithMl(cart);
+    setIsPredicting(false);
+
+    if (hasRecommendation) {
+      setShowOffer(true);
+    } else {
+      setCurrentOffer({
+        triggerItem: cart.map(i => i.name).join(', '),
+        offerItem: null,
+        discountText: '',
+        message: 'Final cart prediction complete. No additional recommendation was found.',
+        aiType: 'Final AI prediction'
+      });
+      setShowOffer(true);
     }
   };
 
@@ -118,10 +147,9 @@ export default function UserCheckout() {
   };
 
   const acceptOffer = () => {
-    if (currentOffer.offerItem) {
+    if (currentOffer?.offerItem) {
       setCart(prev => [...prev, { ...currentOffer.offerItem, price: currentOffer.discountPrice, qty: 1, isOffer: true }]);
-    } else {
-      // Modify existing item price (e.g. Tomato Soup)
+    } else if (currentOffer?.triggerItem) {
       setCart(prev => prev.map(i => i.name === currentOffer.triggerItem ? { ...i, price: currentOffer.discountPrice, isOffer: true } : i));
     }
     setShowOffer(false);
@@ -229,8 +257,15 @@ export default function UserCheckout() {
                 <Typography variant="h6">Total</Typography>
                 <Typography variant="h6" fontWeight="bold" color="primary.main">₹{cartTotal}</Typography>
               </Box>
-              <Button variant="contained" color="primary" fullWidth size="large" disabled={cart.length === 0}>
-                Checkout Now
+              <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                size="large"
+                disabled={cart.length === 0 || isPredicting}
+                onClick={handleCheckout}
+              >
+                {isPredicting ? 'Predicting...' : 'Checkout Now'}
               </Button>
             </Box>
           </Card>

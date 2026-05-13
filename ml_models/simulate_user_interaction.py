@@ -10,6 +10,7 @@ This script simulates a user interacting with the system:
 import sys
 import os
 import csv
+import requests  # Add this import for HTTP calls
 sys.path.append(os.path.dirname(__file__))
 
 from coupon_ai import MarketBasketAnalyzer
@@ -155,9 +156,33 @@ class CartSimulator:
             return
 
         print("\nFinal recommendation check based on your selected products:")
+        
+        # Get cart item names
+        cart_item_names = [item['item']['name'] for item in self.cart]
+        
+        # Try to call Lambda/cloud API first
+        try:
+            # Use environment variable or default to local
+            lambda_url = os.getenv('LAMBDA_RECOMMENDATION_URL', 'http://127.0.0.1:8000/predict_bundle')
+            
+            response = requests.post(lambda_url, json={'items': cart_item_names}, timeout=10)
+            if response.status_code == 200:
+                result = response.json()
+                if result.get('recommendation'):
+                    print(f"Cloud ML Final Recommendation: {result['recommendation']}")
+                    print(f"Discount: {result['discountText']}")
+                    print(f"Reason: {result['message']}")
+                    return
+                else:
+                    print("Cloud ML: No additional recommendations for your final cart.")
+                    return
+        except requests.exceptions.RequestException as e:
+            print(f"Could not connect to cloud ML service ({e}), falling back to local ML...")
+        
+        # Fallback to local ML
         final_recs = self.get_recommendations(self.cart)
         if final_recs:
-            print(f"Final ML suggested next item(s): {', '.join(final_recs)}")
+            print(f"Local ML suggested next item(s): {', '.join(final_recs)}")
         else:
             print("The ML model did not find an additional bundle recommendation for your final cart.")
 
